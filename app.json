@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "scheme": "acme",
+    "plugins": [
+      "expo-router"
+    ],
+    "name": "LLM-Based-ADHD-Therapy",
+    "slug": "LLM-Based-ADHD-Therapy"
+  }
+}
