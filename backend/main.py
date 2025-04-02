@@ -1,8 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 import requests
 import json
 from fastapi.middleware.cors import CORSMiddleware
-
+from backend.auth import router as auth_router  # Importing the authentication router
+from motor.motor_asyncio import AsyncIOMotorClient
+from datetime import datetime
+import asyncio
+from backend.database import save_message, get_chat_history
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -14,6 +18,9 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
+
+app.include_router(auth_router)
+
 # Hugging Face API details
 API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
 HEADERS = {"Authorization": "Bearer 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"}
@@ -47,17 +54,24 @@ def read_root():
     return {"message": "ADHD Therapy API is running!"}
 
 @app.get("/chat/")
-def chat_with_llama(user_input: str, style: str = "casual"):
+async def chat_with_llama(user_input: str, style: str = "casual", session_id: str = "default_session"):
     """ Chat endpoint for ADHD assistance """
+    chat_history = await get_chat_history(session_id)
+
     system_prompt = styles.get(style, styles["casual"])
     
-    chat_text = f"{system_prompt}\nUser: {user_input}\nAssistant:"
+    history_text = "\n".join([f"{message['role'].capitalize()}: {message['text']}" for message in chat_history])
+
+    chat_text = f"{system_prompt}\n{history_text}\nUser: {user_input}\nAIresponse:"
 
     response = requests.post(API_URL, headers=HEADERS, json={"inputs": chat_text})
     
     if response.status_code == 200:
         generated_text = response.json()[0]["generated_text"]  #then remove everything before "Assistant:
-        bot_response = generated_text.split("Assistant:", 1)[-1].strip()
+        bot_response = generated_text.split("AIresponse:", 1)[-1].strip()
+
+        await save_message(session_id, "user", user_input)
+        await save_message(session_id, "assistant", bot_response)
         return {"response": bot_response}
     else:
         return {"error": response.status_code, "message": response.text}

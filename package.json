@@ -29,5 +29,9 @@
   "devDependencies": {
     "@babel/core": "^7.20.0"
   },
-  "private": true
+  "private": true,
+  "description": "Use [`expo-router`](https://docs.expo.dev/router/introduction/) to build native navigation using files in the `app/` directory.",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
