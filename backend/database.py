@@ -6,6 +6,8 @@ MONGO_URI = MONGO_URI = "mongodb+srv://elkousyyyyara:U73L3qQdL1oPsZyp@cluster0.p
 client = AsyncIOMotorClient(MONGO_URI)
 db = client.get_database("ADHDchatbot")  
 chat_collection = db.get_collection("chat")  
+task_collection = db.get_collection("task")  
+
 
 from datetime import datetime
 
@@ -32,3 +34,23 @@ async def get_chat_history(session_id: str):
     """Fetch the conversation history from MongoDB"""
     chat = await chat_collection.find_one({"session_id": session_id}) 
     return chat["messages"] if chat else []  
+
+async def save_task(username: str, task_name: str, details: str):
+    """Store a task suggestion in MongoDB under the authenticated user"""
+    await task_collection.update_one(
+        {"username": username},  # Find the document by username
+        {
+            "$push": {  
+                "tasks": {
+                    "task": task_name,
+                    "details": details,
+                    "timestamp": datetime.utcnow(),
+                }
+            }
+        },
+        upsert=True  
+    )    
+async def get_user_tasks(username: str):
+    """Fetch all tasks associated with a user from MongoDB"""
+    user_tasks = await task_collection.find_one({"username": username})
+    return user_tasks["tasks"] if user_tasks else []

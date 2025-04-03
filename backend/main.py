@@ -6,7 +6,7 @@ from backend.auth import router as auth_router  # Importing the authentication r
 from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime
 import asyncio
-from backend.database import save_message, get_chat_history
+from backend.database import save_message, get_chat_history, get_db, save_task, get_user_tasks
 from backend.auth import get_current_user
 
 # Initialize FastAPI app
@@ -78,8 +78,11 @@ async def chat_with_llama(user_input: str, style: str = "casual", current_user: 
     else:
         return {"error": response.status_code, "message": response.text}
 
+
+
+
 @app.post("/add_task/")
-def add_task(task_name: str):
+async def add_task(task_name: str, db: dict = Depends(get_db), current_user: str = Depends(get_current_user)):
     """ Endpoint to generate focus methods and rewards for a task """
     prompt = f"You are a supportive and friendly ADHD therapist who gives practical, easy-to-understand advice. Suggest an effective focus method and a motivating reward for completing the task: '{task_name}'."
     
@@ -92,23 +95,27 @@ def add_task(task_name: str):
             generated_text = generated_text[0].get("generated_text", "")
         clean_text = generated_text.replace(prompt, "").strip()
 
-        task_data = {"task": task_name, "details": clean_text}
+        task_data = {
+            "username": current_user,  # Store task under user
+            "task": task_name, 
+            "details": clean_text
+        }
         
-        # Save tasks to a file (simulate a database)
-        try:
-            with open("tasks.json", "r") as file:
-                tasks = json.load(file)
-        except FileNotFoundError:
-            tasks = []
+        await save_task(current_user, task_name, clean_text)
 
-        tasks.append(task_data)
-        with open("tasks.json", "w") as file:
-            json.dump(tasks, file)
-
-        print(task_data["details"] )
         return {"message": f"Task '{task_name}' added!", "suggested_strategy": task_data["details"]}
     else:
         return {"error": response.status_code, "message": response.text}
+
+
+@app.get("/tasks/")
+async def get_tasks(current_user: str = Depends(get_current_user)):
+    """Fetch all tasks for the authenticated user"""
+    tasks = await get_user_tasks(current_user)
+    return {"username": current_user, "tasks": tasks}    
+
+
+
 
 @app.get("/relaxation/")
 def ai_generated_exercise(feeling: str):
