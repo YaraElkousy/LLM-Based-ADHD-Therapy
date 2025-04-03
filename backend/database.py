@@ -4,8 +4,8 @@ MONGO_URI = MONGO_URI = "mongodb+srv://elkousyyyyara:U73L3qQdL1oPsZyp@cluster0.p
 
 
 client = AsyncIOMotorClient(MONGO_URI)
-db = client.get_database("ADHDchatbot")  # Replace with your DB name
-chat_collection = db.get_collection("chat")  # Replace with your collection name
+db = client.get_database("ADHDchatbot")  
+chat_collection = db.get_collection("chat")  
 
 from datetime import datetime
 

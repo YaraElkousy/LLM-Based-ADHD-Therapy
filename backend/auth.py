@@ -61,7 +61,6 @@ router = APIRouter()
 @router.post("/register")
 async def register_user(user: User,  db: dict = Depends(get_db)):
     existing_user = await get_user(db, user.username)
-    print(f"Existing user: {existing_user}")  # Log the result to check if it's None
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already registered")
     
@@ -75,7 +74,7 @@ async def register_user(user: User,  db: dict = Depends(get_db)):
 
 @router.post("/token")
 async def login_for_access_token(user: User,  db: dict = Depends(get_db)):
-    db_user = get_user(db, user.username)
+    db_user = await get_user(db, user.username)
     if db_user is None or not verify_password(user.password, db_user["hashed_password"]):
         raise HTTPException(status_code=401, detail="Invalid username or password")
 

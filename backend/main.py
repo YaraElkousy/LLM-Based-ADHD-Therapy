@@ -7,6 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime
 import asyncio
 from backend.database import save_message, get_chat_history
+from backend.auth import get_current_user
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -54,8 +55,9 @@ def read_root():
     return {"message": "ADHD Therapy API is running!"}
 
 @app.get("/chat/")
-async def chat_with_llama(user_input: str, style: str = "casual", session_id: str = "default_session"):
+async def chat_with_llama(user_input: str, style: str = "casual", current_user: str = Depends(get_current_user)):
     """ Chat endpoint for ADHD assistance """
+    session_id = f"session_{current_user}"  # Unique session per user
     chat_history = await get_chat_history(session_id)
 
     system_prompt = styles.get(style, styles["casual"])
