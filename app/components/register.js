@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TextInput, Button, View, Text } from 'react-native';
-import { register } from '../api/authService'; 
+import { register } from '../auth/authService'; 
+
 
 const Register = ({ navigation }) => {
   const [username, setUsername] = useState('');

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   View, 
   Text, 
@@ -6,11 +6,15 @@ import {
   TouchableOpacity, 
   ActivityIndicator, 
   StyleSheet, 
-  ScrollView 
+  ScrollView,
+  KeyboardAvoidingView,
+  FlatList,
+  Platform,
+   
 } from "react-native";
 import { fetchChatResponse,fetchChatHistory } from "../api/chat";
 
-const ChatBot = ({ token }) => {
+const ChatBot = ( {token} ) => {
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([]);

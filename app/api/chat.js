@@ -31,6 +31,7 @@ export const fetchChatResponse = async (userInput, style, token) => {
 };
 
 export const fetchChatHistory = async (token) => {
+  //console.log(token)
   try {
     const response = await axios.get(`${API_URL}/chat_history/`, {
       headers: {

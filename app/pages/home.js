@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import ChatBot from '../components/chatbot'; // Assuming you already have the Chat component
-import TaskForm from '../components/task'; // Assuming you have a Tasks component
+import ChatBot from '../components/chatbot'; 
+import TaskForm from '../components/task'; 
+import { useAuth } from '../auth/authContext'
 
 const Home = () => {
-  const [selectedTab, setSelectedTab] = useState('chat'); // Default tab
+  const [selectedTab, setSelectedTab] = useState('tasks'); // Default tab
+  const { token } = useAuth();
 
   return (
     <View style={styles.container}>
@@ -22,8 +24,8 @@ const Home = () => {
 
       {/* Render Tab Content */}
       <View style={styles.contentArea}>
-        {selectedTab === 'chat' && <ChatBot />}
-        {selectedTab === 'tasks' && <TaskForm />}
+        {selectedTab === 'chat' && <ChatBot token={token} />}
+        {selectedTab === 'tasks' && <TaskForm token={token}/>}
       </View>
     </View>
   );

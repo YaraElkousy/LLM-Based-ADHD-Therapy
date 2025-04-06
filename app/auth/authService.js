@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 
-const API_URL = 'http://your-api-url.com'; // Replace with your actual API URL
+const API_URL = 'http://192.168.100.195:8000'; 
 
 
 export const register = async (username, password) => {
@@ -18,7 +18,7 @@ export const register = async (username, password) => {
         });
   
         const token = tokenResponse.data.access_token;
-        await SecureStore.setItemAsync('accessToken', token);
+        await SecureStore.setItemAsync('accessToken', token); 
         return true;
       }
       return false;
@@ -51,5 +51,5 @@ export const getAccessToken = async () => {
 
 export const isLoggedIn = async () => {
   const token = await getAccessToken();
-  return !!token;
+  return token && token !== null && token !== undefined;
 };

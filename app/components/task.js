@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList } from "react-native";
 import { addTask, getTasks } from "../api/task";
+import { useAuth } from '../auth/authContext';
 
 const TaskForm = () => {
   const [taskName, setTaskName] = useState("");
@@ -8,7 +9,7 @@ const TaskForm = () => {
   const [error, setError] = useState(null);
   const [tasks, setTasks] = useState([]); 
   const [loading, setLoading] = useState(false);
-
+  const { token } = useAuth();
 
   useEffect(() => {
     const fetchTasks = async () => {

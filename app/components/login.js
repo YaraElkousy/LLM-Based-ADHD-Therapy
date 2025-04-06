@@ -1,4 +1,3 @@
-// Login.js
 import React, { useState } from 'react';
 import { TextInput, Button, View, Text } from 'react-native';
 import { useAuth } from '../auth/authContext'; 

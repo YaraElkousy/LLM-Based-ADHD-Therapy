@@ -1,12 +1,12 @@
 import React from "react";
 import { useAuth } from "./auth/authContext";
 import GuestHome from "./pages/guestHome";
-import AuthenticatedHome from "./pages/home";
+import Home from "./pages/home";
 
 const AppNavigator = () => {
-  const { token } = useAuth();
+  const { authenticated } = useAuth();
 
-  return token ? <AuthenticatedHome /> : <GuestHome />;
+  return authenticated ? <Home /> : <GuestHome />;
 };
 
 export default AppNavigator;
