@@ -1,11 +1,30 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import { addTask } from "../api/task";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList } from "react-native";
+import { addTask, getTasks } from "../api/task";
 
 const TaskForm = () => {
   const [taskName, setTaskName] = useState("");
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
+  const [tasks, setTasks] = useState([]); 
+  const [loading, setLoading] = useState(false);
+
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      setLoading(true);
+      try {
+        const fetchedTasks = await getTasks(token);
+        setTasks(fetchedTasks);
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to load tasks");
+        setLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, [token]);
 
   const handleSubmit = async () => {
     if (!taskName.trim()) return;
@@ -14,6 +33,8 @@ const TaskForm = () => {
       const data = await addTask(taskName);
       setResponse(data.suggested_strategy);
       setError(null);
+      const updatedTasks = await getTasks(token);
+      setTasks(updatedTasks);
     } catch (err) {
       setError(err.message);
       setResponse(null);
@@ -22,6 +43,7 @@ const TaskForm = () => {
 
   return (
     <View style={styles.container}>
+      {/* Task Input Form */}
       <TextInput
         style={styles.input}
         placeholder="Task Name"
@@ -33,6 +55,7 @@ const TaskForm = () => {
         <Text style={styles.buttonText}>Submit</Text>
       </TouchableOpacity>
 
+      {/* Display Suggested Focus Strategy */}
       {response && (
         <View style={styles.resultContainer}>
           <Text style={styles.resultTitle}>Suggested Focus Strategy:</Text>
@@ -40,7 +63,26 @@ const TaskForm = () => {
         </View>
       )}
 
+      {/* Error message */}
       {error && <Text style={styles.errorText}>{error}</Text>}
+
+      {/* Loading indicator */}
+      {loading && <Text>Loading tasks...</Text>}
+
+      {/* Display saved tasks */}
+      <View style={styles.savedTasksContainer}>
+        <Text style={styles.savedTasksHeader}>Saved Tasks:</Text>
+        <FlatList
+          data={tasks}
+          keyExtractor={(item, index) => `${item.task}-${index}`} // Use task name and index for uniqueness
+          renderItem={({ item }) => (
+            <View style={styles.taskItem}>
+              <Text style={styles.taskName}>{item.task}</Text>
+              <Text style={styles.taskStrategy}>{item.details}</Text> 
+            </View>
+          )}
+        />
+      </View>
     </View>
   );
 };
@@ -79,6 +121,26 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     marginTop: 10,
+  },
+  savedTasksContainer: {
+    marginTop: 20,
+  },
+  savedTasksHeader: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  taskItem: {
+    padding: 10,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 5,
+    marginVertical: 5,
+  },
+  taskName: {
+    fontSize: 16,
+  },
+  taskStrategy: {
+    fontSize: 14,
+    color: "#555",
   },
 });
 

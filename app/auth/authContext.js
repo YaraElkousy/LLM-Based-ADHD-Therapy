@@ -1,7 +1,11 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { isLoggedIn, logout, login } from './authService';
 
 export const AuthContext = createContext();
+
+export const useAuth = () => {
+    return useContext(AuthContext);
+  };
 
 export const AuthProvider = ({ children }) => {
   const [authenticated, setAuthenticated] = useState(false);

@@ -3,6 +3,31 @@ import axios from 'axios';
 
 const API_URL = 'http://your-api-url.com'; // Replace with your actual API URL
 
+
+export const register = async (username, password) => {
+    try {
+      const response = await axios.post(`${API_URL}/register`, {
+        username,
+        password
+      });
+  
+      if (response.status === 200) {
+        const tokenResponse = await axios.post(`${API_URL}/token`, {
+          username,
+          password
+        });
+  
+        const token = tokenResponse.data.access_token;
+        await SecureStore.setItemAsync('accessToken', token);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Registration failed:', err);
+      return false;
+    }
+  };
+
 export const login = async (username, password) => {
   try {
     const response = await axios.post(`${API_URL}/token`, { username, password });
