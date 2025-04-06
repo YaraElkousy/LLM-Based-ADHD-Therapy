@@ -78,7 +78,13 @@ async def chat_with_llama(user_input: str, style: str = "casual", current_user: 
     else:
         return {"error": response.status_code, "message": response.text}
 
-
+@app.get("/chat_history/")
+async def get_chat_history(current_user: str = Depends(get_current_user)):
+    """ Fetch all chat messages for the authenticated user """
+    session_id = f"session_{current_user}"  # Unique session per user
+    chat_history = await get_chat_history(session_id)
+    
+    return {"messages": chat_history}
 
 
 @app.post("/add_task/")

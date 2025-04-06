@@ -30,3 +30,17 @@ export const fetchChatResponse = async (userInput, style, token) => {
   }
 };
 
+export const fetchChatHistory = async (token) => {
+  try {
+    const response = await axios.get(`${API_URL}/chat_history/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.messages; //response contains an array of messages?
+  } catch (error) {
+    console.error("Error fetching chat history:", error);
+    throw error;
+  }
+};
+
