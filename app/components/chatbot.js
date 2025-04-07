@@ -61,14 +61,6 @@ const ChatBot = ( {token} ) => {
   };
 
 
-  // Function to render each message item in the FlatList
-  const renderItem = ({ item }) => {
-    return (
-      <View style={[styles.messageContainer, item.role === "user" ? styles.userMessage : styles.assistantMessage]}>
-        <Text style={styles.messageText}>{item.text}</Text>
-      </View>
-    );
-  };
   // Add this ref
 const flatListRef = React.useRef(null);
 
@@ -92,13 +84,19 @@ const scrollToBottom = () => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-        <FlatList
-          data={messages}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => index.toString()}
-          contentContainerStyle={styles.chatList}
-        />
-
+        <View style={styles.chatList}>
+          {messages.map((item, index) => (
+            <View
+              key={index}
+              style={[
+                styles.messageContainer,
+                item.role === "user" ? styles.userMessage : styles.assistantMessage,
+              ]}
+            >
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
+          ))}
+        </View>
       {/* Input and Send Button */}
       <View style={styles.inputContainer}>
         <TextInput
