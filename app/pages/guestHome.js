@@ -7,7 +7,7 @@ import Relaxation from '../components/relax';
 const GuestHome = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.welcomeText}>Welcome to the Guest Home Page!</Text>
+      <Text style={styles.welcomeText}>Welcome!</Text>
 
       {/* Login Component */}
       <Text style={styles.sectionTitle}>Login</Text>

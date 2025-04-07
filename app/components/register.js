@@ -30,7 +30,7 @@ const Register = ({ navigation }) => {
         onChangeText={setPassword}
         secureTextEntry
       />
-      <Button title="Register" onPress={handleRegister} />
+      <Button title="Register" onPress={handleRegister} color="#A7C7E7"/>
       {error && <Text>{error}</Text>}
     </View>
   );

@@ -31,7 +31,7 @@ const Login = ({ navigation }) => {
         onChangeText={setPassword}
         secureTextEntry
       />
-      <Button title="Login" onPress={handleLogin} />
+      <Button title="Login" onPress={handleLogin} color="#A7C7E7"/>
       {error && <Text>{error}</Text>}
     </View>
   );

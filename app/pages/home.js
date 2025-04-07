@@ -6,11 +6,20 @@ import { useAuth } from '../auth/authContext'
 
 const Home = () => {
   const [selectedTab, setSelectedTab] = useState('chat'); // Default tab
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout(); 
+    // navigation.navigate('GuestHome'); 
+  };
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>Welcome, User!</Text>
+      <View style={styles.headerRow}>
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
       
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
@@ -46,7 +55,7 @@ const styles = StyleSheet.create({
   },
   tabButton: {
     padding: 10,
-    backgroundColor: '#007BFF',
+    backgroundColor: '#A7C7E7',
     margin: 5,
     borderRadius: 5,
   },
@@ -56,6 +65,19 @@ const styles = StyleSheet.create({
   },
   contentArea: {
     padding: 10,
+  },
+  logoutButton: {
+    backgroundColor: '#4A4A4A', 
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignSelf: 'flex-end', 
+    marginTop: 10,
+  },
+  logoutText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
   },
 });
 

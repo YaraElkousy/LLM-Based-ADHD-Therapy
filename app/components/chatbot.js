@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    padding: 20,  //upon removing this i can now see the text inuput and button a bit better
+    padding: 20,  
   },
   chatList: {
     paddingBottom: 20,
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   userMessage: {
     alignSelf: "flex-end",
-    backgroundColor: "#007BFF",
+    backgroundColor: "#A7C7E7",
   },
   assistantMessage: {
     alignSelf: "flex-start",
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   button: {
-    backgroundColor: "#007BFF",
+    backgroundColor: "#A7C7E7",
     padding: 20,
     borderRadius: 8,
     alignItems: "center",
