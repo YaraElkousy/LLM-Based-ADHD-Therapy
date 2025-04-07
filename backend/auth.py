@@ -32,7 +32,7 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
-def create_access_token(data: dict, expires_delta: timedelta = timedelta(hours=1)):
+def create_access_token(data: dict, expires_delta: timedelta = timedelta(hours=5)):
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})

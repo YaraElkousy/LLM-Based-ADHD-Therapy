@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, ScrollView } from "react-native";
 import { addTask, getTasks } from "../api/task";
 import { useAuth } from '../auth/authContext';
 
@@ -16,7 +16,7 @@ const TaskForm = () => {
       setLoading(true);
       try {
         const fetchedTasks = await getTasks(token);
-        setTasks(fetchedTasks);
+        setTasks(fetchedTasks.tasks);
         setLoading(false);
       } catch (err) {
         setError("Failed to load tasks");
@@ -31,11 +31,11 @@ const TaskForm = () => {
     if (!taskName.trim()) return;
 
     try {
-      const data = await addTask(taskName);
+      const data = await addTask(taskName, token);
       setResponse(data.suggested_strategy);
       setError(null);
       const updatedTasks = await getTasks(token);
-      setTasks(updatedTasks);
+      setTasks(updatedTasks.tasks);
     } catch (err) {
       setError(err.message);
       setResponse(null);
@@ -73,16 +73,15 @@ const TaskForm = () => {
       {/* Display saved tasks */}
       <View style={styles.savedTasksContainer}>
         <Text style={styles.savedTasksHeader}>Saved Tasks:</Text>
-        <FlatList
-          data={tasks}
-          keyExtractor={(item, index) => `${item.task}-${index}`} // Use task name and index for uniqueness
-          renderItem={({ item }) => (
-            <View style={styles.taskItem}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* Manually mapping tasks */}
+          {tasks.map((item, index) => (
+            <View key={`${item.task}-${index}`} style={styles.taskItem}>
               <Text style={styles.taskName}>{item.task}</Text>
               <Text style={styles.taskStrategy}>{item.details}</Text> 
             </View>
-          )}
-        />
+          ))}
+        </ScrollView>
       </View>
     </View>
   );
@@ -91,6 +90,7 @@ const TaskForm = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    maxHeight: 800,
   },
   input: {
     borderWidth: 1,
@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
   },
   savedTasksContainer: {
     marginTop: 20,
+    maxHeight: 400,
   },
   savedTasksHeader: {
     fontSize: 18,

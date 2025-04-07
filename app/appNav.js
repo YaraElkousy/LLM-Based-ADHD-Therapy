@@ -6,6 +6,7 @@ import Home from "./pages/home";
 const AppNavigator = () => {
   const { authenticated } = useAuth();
 
+  //console.log(authenticated)
   return authenticated ? <Home /> : <GuestHome />;
 };
 

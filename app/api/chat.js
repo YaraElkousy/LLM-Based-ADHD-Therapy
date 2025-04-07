@@ -38,6 +38,7 @@ export const fetchChatHistory = async (token) => {
         Authorization: `Bearer ${token}`,
       },
     });
+    console.log("APIIII", response.data.messages)
     return response.data.messages; //response contains an array of messages?
   } catch (error) {
     console.error("Error fetching chat history:", error);

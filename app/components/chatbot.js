@@ -25,7 +25,7 @@ const ChatBot = ( {token} ) => {
     const loadChatHistory = async () => {
       try {
         const data = await fetchChatHistory(token);
-        setMessages(data.messages); 
+        setMessages(data); 
       } catch (error) {
         console.error("Error loading chat history:", error);
       }
@@ -69,16 +69,35 @@ const ChatBot = ( {token} ) => {
       </View>
     );
   };
+  // Add this ref
+const flatListRef = React.useRef(null);
+
+// Modify the useEffect to safely check for messages
+useEffect(() => {
+  if (messages && messages.length > 0) {
+    setTimeout(() => {
+      if (flatListRef.current) {
+        flatListRef.current.scrollToEnd({ animated: true });
+      }
+    }, 100);
+  }
+}, [messages]);
+
+// Add this function before the return statement
+const scrollToBottom = () => {
+  if (flatListRef.current && messages && messages.length > 0) {
+    flatListRef.current.scrollToEnd({ animated: true });
+  }
+};
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <FlatList
-        data={messages}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
-        inverted // This makes the list scroll to the bottom (latest messages)
-        contentContainerStyle={styles.chatList}
-      />
+        <FlatList
+          data={messages}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => index.toString()}
+          contentContainerStyle={styles.chatList}
+        />
 
       {/* Input and Send Button */}
       <View style={styles.inputContainer}>
@@ -108,7 +127,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    padding: 20,
+    padding: 20,  //upon removing this i can now see the text inuput and button a bit better
   },
   chatList: {
     paddingBottom: 20,
@@ -147,7 +166,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "#007BFF",
-    padding: 10,
+    padding: 20,
     borderRadius: 8,
     alignItems: "center",
   },
@@ -156,6 +175,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-});
+}
+);
 
 export default ChatBot;

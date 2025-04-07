@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import ChatBot from '../components/chatbot'; 
 import TaskForm from '../components/task'; 
 import { useAuth } from '../auth/authContext'
 
 const Home = () => {
-  const [selectedTab, setSelectedTab] = useState('tasks'); // Default tab
+  const [selectedTab, setSelectedTab] = useState('chat'); // Default tab
   const { token } = useAuth();
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.header}>Welcome, User!</Text>
       
       {/* Tab Navigation */}
@@ -27,7 +27,7 @@ const Home = () => {
         {selectedTab === 'chat' && <ChatBot token={token} />}
         {selectedTab === 'tasks' && <TaskForm token={token}/>}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
