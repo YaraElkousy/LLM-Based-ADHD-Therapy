@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { isLoggedIn, logout, login, getAccessToken } from './authService';
+import { isLoggedIn, logout, login, getAccessToken, register } from './authService';
 
 export const AuthContext = createContext();
 
@@ -28,6 +28,16 @@ export const AuthProvider = ({ children }) => {
     checkToken();
   }, []);
 
+
+  const handleRegister = async (username, password) => {
+    const success = await register(username, password);
+    if (success) {
+      setAuthenticated(true);  
+      setToken(await getAccessToken());  
+    }
+    return success;
+  };
+
   const handleLogin = async (username, password) => {
     const success = await login(username, password);
     setAuthenticated(success);
@@ -44,7 +54,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ authenticated, token, login: handleLogin, logout: handleLogout }}>
+    <AuthContext.Provider value={{ authenticated, token,register: handleRegister, login: handleLogin, logout: handleLogout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -9,14 +9,20 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Animated,
 } from "react-native";
 import { fetchChatResponse, fetchChatHistory } from "../api/chat";
+import CatAnimation from "./cat"; 
 
 const ChatBot = ({ token }) => {
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([]);
   const scrollViewRef = useRef();
+  const catAnimationRef = useRef();
+
+  // Animation for cat appearing/disappearing
+  const catOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const loadChatHistory = async () => {
@@ -30,6 +36,13 @@ const ChatBot = ({ token }) => {
       }
     };
     loadChatHistory();
+    
+    // Fade in the cat animation
+    Animated.timing(catOpacity, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
   }, [token]);
 
   // Scroll to bottom when messages change
@@ -71,6 +84,11 @@ const ChatBot = ({ token }) => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
+      {/* Cat animation in the top-right corner */}
+      {/* <Animated.View style={[styles.catContainer, { opacity: catOpacity }]}>
+        <CatAnimation ref={catAnimationRef} style={styles.cat} />
+      </Animated.View> */}
+      
       <ScrollView 
         ref={scrollViewRef}
         style={styles.chatScrollView}
@@ -95,9 +113,11 @@ const ChatBot = ({ token }) => {
             </View>
           ))
         ) : (
-          <Text style={styles.emptyStateText}>
-            Start a conversation with your wellness assistant...
-          </Text>
+          <View style={styles.emptyStateContainer}>
+            <Text style={styles.emptyStateText}>
+              Start a conversation with your wellness assistant...
+            </Text>
+          </View>
         )}
       </ScrollView>
 
@@ -130,12 +150,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "transparent",
   },
+  catContainer: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    zIndex: 10,
+  },
+  cat: {
+    width: 80,
+    height: 80,
+  },
   chatScrollView: {
     flex: 1,
   },
   chatContentContainer: {
     paddingVertical: 10,
     paddingHorizontal: 4,
+    paddingTop: 60, // Add some padding at the top to make space for the cat
   },
   messageContainer: {
     marginBottom: 12,
@@ -166,11 +197,16 @@ const styles = StyleSheet.create({
   userMessageText: {
     color: "#FFFFFF",
   },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 40,
+  },
   emptyStateText: {
     textAlign: "center",
     color: "#A0A9C0",
     fontSize: 14,
-    marginTop: 40,
     fontStyle: "italic",
   },
   inputContainer: {
