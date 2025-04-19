@@ -71,11 +71,15 @@ async def chat_with_llama(user_input: str, style: str = "casual", current_user: 
     messages.append({"role": "user", "content": user_input})
 
     response = requests.post(API_URL, headers=HEADERS, json={
-        "model": "nvidia/llama-3.1-nemotron-nano-8b-v1:free",  
+        "model": "deepseek/deepseek-r1-distill-qwen-14b:free",  
         "messages": messages,
         "max_tokens": 1000
     })
     
+    #google/gemini-2.5-pro-preview-03-25
+    #deepseek/deepseek-r1-distill-qwen-14b:free
+    #nvidia/llama-3.1-nemotron-nano-8b-v1:free
+
     try:
         data = response.json()
         bot_response = data["choices"][0]["message"]["content"]
