@@ -23,8 +23,8 @@ app.add_middleware(
 app.include_router(auth_router)
 
 # Hugging Face API details
-API_URL = "https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
-HEADERS = {"Authorization": "Bearer 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"}
+API_URL = "https://openrouter.ai/api/v1/chat/completions"
+HEADERS = {"Authorization": "Bearer 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", "Content-Type": "application/json"}
 
 # Define different assistant styles
 styles = {
@@ -46,7 +46,8 @@ styles = {
         - Use a warm and conversational tone, like a therapist chatting casually.  
         - Offer actionable ADHD strategies in simple terms.  
         - Avoid overwhelming users with too much information at once and give somewhat short answers.  
-        - Never provide medical diagnoses or suggest medications—focus on behavioral strategies.  
+        - Never provide medical diagnoses or suggest medications—focus on behavioral strategies. 
+        - Strategies should align with CBT, mindfulness, and executive function research 
         """
 }
 
@@ -64,19 +65,31 @@ async def chat_with_llama(user_input: str, style: str = "casual", current_user: 
     
     history_text = "\n".join([f"{message['role'].capitalize()}: {message['text']}" for message in chat_history])
 
-    chat_text = f"{system_prompt}\n{history_text}\nUser: {user_input}\nAIresponse:"
+    messages = [{"role": "system", "content": system_prompt}]
+    for message in chat_history:
+        messages.append({"role": message["role"], "content": message["text"]})
+    messages.append({"role": "user", "content": user_input})
 
-    response = requests.post(API_URL, headers=HEADERS, json={"inputs": chat_text})
+    response = requests.post(API_URL, headers=HEADERS, json={
+        "model": "nvidia/llama-3.1-nemotron-nano-8b-v1:free",  
+        "messages": messages,
+        "max_tokens": 1000
+    })
     
-    if response.status_code == 200:
-        generated_text = response.json()[0]["generated_text"]  #then remove everything before "Assistant:
-        bot_response = generated_text.split("AIresponse:", 1)[-1].strip()
-
+    try:
+        data = response.json()
+        bot_response = data["choices"][0]["message"]["content"]
         await save_message(session_id, "user", user_input)
         await save_message(session_id, "assistant", bot_response)
         return {"response": bot_response}
-    else:
-        return {"error": response.status_code, "message": response.text}
+    except Exception as e:
+        return {
+            "error": "LLM response error",
+            "status_code": response.status_code,
+            "raw_response": response.text,
+            "exception": str(e)
+        }
+
 
 @app.get("/chat_history/")
 async def chat_history(current_user: str = Depends(get_current_user)):
