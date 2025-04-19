@@ -23,8 +23,8 @@ app.add_middleware(
 app.include_router(auth_router)
 
 # Hugging Face API details
-API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
-HEADERS = {"Authorization": "Bearer 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"}
+API_URL = "https://api-inference.huggingface.co/models/modularai/Llama-3.1-8B-Instruct-GGUF"
+HEADERS = {"Authorization": "Bearer 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"}
 
 # Define different assistant styles
 styles = {
@@ -42,10 +42,10 @@ styles = {
         """,
     "casual": """You are a supportive and friendly ADHD therapist who gives practical, easy-to-understand advice. 
         - Do NOT make up facts. 
+        - Keep your answers short and simple.
         - Use a warm and conversational tone, like a therapist chatting casually.  
         - Offer actionable ADHD strategies in simple terms.  
         - Avoid overwhelming users with too much information at once and give somewhat short answers.  
-        - If unsure, say, ‘I can’t say for sure, but here’s a common strategy that works for many people.’  
         - Never provide medical diagnoses or suggest medications—focus on behavioral strategies.  
         """
 }
