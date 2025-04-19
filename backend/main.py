@@ -23,7 +23,7 @@ app.add_middleware(
 app.include_router(auth_router)
 
 # Hugging Face API details
-API_URL = "https://api-inference.huggingface.co/models/modularai/Llama-3.1-8B-Instruct-GGUF"
+API_URL = "https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
 HEADERS = {"Authorization": "Bearer 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"}
 
 # Define different assistant styles
