@@ -42,7 +42,7 @@ styles = {
         """,
     "casual": """You are a supportive and friendly ADHD therapist who gives practical, easy-to-understand advice. 
         - Do NOT make up facts. 
-        - Keep your answers VERY SHORT and simple. Around 5 or 6 sentences max as to not confuse the patient.
+        - Keep your answers VERY SHORT and simple. Around 110 words max as to not confuse the patient.
         - Use a warm and conversational tone, like a therapist chatting casually.  
         - Offer actionable ADHD strategies in simple terms.  
         - Avoid overwhelming users with too much information at once and give somewhat short answers.  
@@ -71,7 +71,7 @@ async def chat_with_llama(user_input: str, style: str = "casual", current_user: 
     messages.append({"role": "user", "content": user_input})
 
     response = requests.post(API_URL, headers=HEADERS, json={
-        "model": "google/gemini-2.5-pro-preview-03-25",  
+        "model": "meta-llama/llama-3.1-8b-instruct:free",  
         "messages": messages,
         "max_tokens": 1000
     })
@@ -79,6 +79,7 @@ async def chat_with_llama(user_input: str, style: str = "casual", current_user: 
     #google/gemini-2.5-pro-preview-03-25
     #deepseek/deepseek-r1-distill-qwen-14b:free
     #nvidia/llama-3.1-nemotron-nano-8b-v1:free
+    #meta-llama/llama-3.1-8b-instruct:free
 
     try:
         data = response.json()
