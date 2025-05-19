@@ -71,7 +71,7 @@ async def chat_with_llama(user_input: str, style: str = "casual", current_user: 
     messages.append({"role": "user", "content": user_input})
 
     response = requests.post(API_URL, headers=HEADERS, json={
-        "model": "meta-llama/llama-3.1-8b-instruct:free",  
+        "model": "google/gemini-2.5-pro-preview-03-25",  
         "messages": messages,
         "max_tokens": 1000
     })
@@ -108,26 +108,23 @@ async def chat_history(current_user: str = Depends(get_current_user)):
 @app.post("/add_task/")
 async def add_task(task_name: str, db: dict = Depends(get_db), current_user: str = Depends(get_current_user)):
     """ Endpoint to generate focus methods and rewards for a task """
-    prompt = f"You are a supportive and friendly ADHD therapist who gives practical, easy-to-understand advice. Suggest an effective focus method and a motivating reward for completing the task: '{task_name}'."
+    prompt = f"Suggest an effective focus method and a motivating reward for completing the task: '{task_name}'. Dont always suggest the pomodoro technique."
     
-    response = requests.post(API_URL, headers=HEADERS, json={"inputs": prompt})
+    response = requests.post(API_URL, headers=HEADERS, json={
+        "model": "google/gemini-2.5-pro-preview-03-25",  
+        "messages": [
+            {"role": "system", "content": "You are a supportive and friendly ADHD therapist who gives practical, easy-to-understand advice in no more than 60 words."},
+            {"role": "user", "content": prompt}
+        ],
+        "max_tokens": 1000
+    })
 
     if response.status_code == 200:
-        generated_text = response.json()
-        
-        if isinstance(generated_text, list) and generated_text:
-            generated_text = generated_text[0].get("generated_text", "")
-        clean_text = generated_text.replace(prompt, "").strip()
+        data = response.json()
+        bot_response = data["choices"][0]["message"]["content"]
+        await save_task(current_user, task_name, bot_response)
 
-        task_data = {
-            "username": current_user,  # Store task under user
-            "task": task_name, 
-            "details": clean_text
-        }
-        
-        await save_task(current_user, task_name, clean_text)
-
-        return {"message": f"Task '{task_name}' added!", "suggested_strategy": task_data["details"]}
+        return {"message": f"Task '{task_name}' added!", "suggested_strategy": bot_response}
     else:
         return {"error": response.status_code, "message": response.text}
 
@@ -144,13 +141,20 @@ async def get_tasks(current_user: str = Depends(get_current_user)):
 @app.get("/relaxation/")
 def ai_generated_exercise(feeling: str):
     """ Endpoint to suggest relaxation exercises based on user mood """
-    prompt = f"You are a supportive and friendly ADHD therapist who gives practical, easy-to-understand advice. Suggest a breathing or meditation exercise for someone feeling {feeling}."
+    prompt = f"Suggest a breathing or meditation exercise for someone feeling {feeling}."
     
-    response = requests.post(API_URL, headers=HEADERS, json={"inputs": prompt})
+    response = requests.post(API_URL, headers=HEADERS, json={
+        "model": "google/gemini-2.5-pro-preview-03-25",  
+        "messages": [
+            {"role": "system", "content": "You are a supportive and friendly ADHD therapist who gives practical, easy-to-understand advice in no more than 60 words."},
+            {"role": "user", "content": prompt}
+        ],
+        "max_tokens": 1000
+    })
 
     if response.status_code == 200:
-       generated_text = response.json()[0]["generated_text"]
-       exercise_text = generated_text.replace(prompt, "").strip()
-       return {"exercise": exercise_text}
+        data = response.json()
+        exercise_text = data["choices"][0]["message"]["content"]
+        return {"exercise": exercise_text.strip()}
     else:
         return {"error": response.status_code, "message": response.text}
