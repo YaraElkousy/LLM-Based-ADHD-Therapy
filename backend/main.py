@@ -23,7 +23,7 @@ app.add_middleware(
 app.include_router(auth_router)
 
 # Hugging Face API details
-API_URL = "https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
+API_URL = "https://api-inference.huggingface.co/models/Qwen/Qwen3-8B"
 HEADERS = {"Authorization": "Bearer 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"}
 
 # Define different assistant styles
@@ -42,11 +42,12 @@ styles = {
         """,
     "casual": """You are a supportive and friendly ADHD therapist who gives practical, easy-to-understand advice. 
         - Do NOT make up facts. 
-        - Keep your answers short and simple.
+        - Keep your answers VERY SHORT and simple. Around 110 words max as to not confuse the patient.
         - Use a warm and conversational tone, like a therapist chatting casually.  
         - Offer actionable ADHD strategies in simple terms.  
         - Avoid overwhelming users with too much information at once and give somewhat short answers.  
-        - Never provide medical diagnoses or suggest medications—focus on behavioral strategies.  
+        - Never provide medical diagnoses or suggest medications—focus on behavioral strategies. 
+        - Strategies should align with CBT, mindfulness, and executive function research 
         """
 }
 
