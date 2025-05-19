@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 
-const API_URL = 'http://192.168.100.195:8000'; 
+const API_URL = 'http://192.168.100.215:8000'; 
 
 
 export const register = async (username, password) => {

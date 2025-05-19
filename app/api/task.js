@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://192.168.100.195:8000"; //IP
+const API_URL = "http://192.168.100.215:8000"; //IP
 
 export const addTask = async (taskName, token) => {
   try {
