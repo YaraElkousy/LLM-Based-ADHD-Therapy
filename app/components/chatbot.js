@@ -7,12 +7,16 @@ import {
   ActivityIndicator, 
   StyleSheet, 
   ScrollView,
+  Keyboard,
   KeyboardAvoidingView,
+  TouchableWithoutFeedback,
   Platform,
   Animated,
 } from "react-native";
 import { fetchChatResponse, fetchChatHistory } from "../api/chat";
 import CatAnimation from "./cat"; 
+import { Audio } from "expo-av";
+
 
 const ChatBot = ({ token }) => {
   const [userInput, setUserInput] = useState("");
@@ -31,7 +35,7 @@ const ChatBot = ({ token }) => {
         // Make sure we're handling the data correctly
         setMessages(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error("Error loading chat history:", error);
+        console.error("Loading chat history:", error);
         setMessages([]);
       }
     };
@@ -64,10 +68,22 @@ const ChatBot = ({ token }) => {
 
     try {
       const data = await fetchChatResponse(userInput, "casual", token);
+      console.log("Chatbot response:", data);
       setMessages((prevMessages) => [
         ...prevMessages,
         { role: "assistant", text: data.response },
       ]);
+
+      // 🔊 Play audio if present
+      console.log(data.audio_url)
+      if (data.audio_url) {
+        const { sound } = await Audio.Sound.createAsync({
+          uri: "http://192.168.100.215:8000" + data.audio_url,
+        });
+        console.log(sound)
+        await sound.playAsync();
+      }
+
     } catch (error) {
       setMessages((prevMessages) => [
         ...prevMessages,
@@ -88,7 +104,8 @@ const ChatBot = ({ token }) => {
       {/* <Animated.View style={[styles.catContainer, { opacity: catOpacity }]}>
         <CatAnimation ref={catAnimationRef} style={styles.cat} />
       </Animated.View> */}
-      
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={{ flex: 1 }}>
       <ScrollView 
         ref={scrollViewRef}
         style={styles.chatScrollView}
@@ -141,6 +158,8 @@ const ChatBot = ({ token }) => {
           )}
         </TouchableOpacity>
       </View>
+      </View>
+    </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 };

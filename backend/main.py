@@ -8,6 +8,12 @@ from datetime import datetime
 import asyncio
 from backend.database import save_message, get_chat_history, get_db, save_task, get_user_tasks
 from backend.auth import get_current_user
+from backend.tts_utils import synthesize_speech
+from fastapi.staticfiles import StaticFiles
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -24,7 +30,8 @@ app.include_router(auth_router)
 
 # Hugging Face API details
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
-HEADERS = {"Authorization": "Bearer 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", "Content-Type": "application/json"}
+HEADERS = {"Authorization": "Bearer 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", "Content-Type": "application/json"}
+#old openrouter key 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
 
 # Define different assistant styles
 styles = {
@@ -84,9 +91,29 @@ async def chat_with_llama(user_input: str, style: str = "casual", current_user: 
     try:
         data = response.json()
         bot_response = data["choices"][0]["message"]["content"]
+
+        #generate audio file
+        # audio_path = f"static/audio/response_{current_user}.mp3"
+        # synthesize_speech(bot_response, output_path=audio_path)
+
         await save_message(session_id, "user", user_input)
         await save_message(session_id, "assistant", bot_response)
-        return {"response": bot_response}
+        audio_url = None
+        try:
+            # generate audio file
+            filename = f"response_{current_user}_{datetime.utcnow().timestamp()}.mp3"
+            audio_path = f"static/audio/{filename}"
+            #print("GOOGLE_APPLICATION_CREDENTIALS =", os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+            synthesize_speech(bot_response, output_path=audio_path)
+            audio_url = f"/static/audio/{filename}"
+        except Exception as audio_error:
+            # Log audio error, but don't fail entire response
+            print(f"Audio generation failed: {audio_error}")
+
+        return {
+            "response": bot_response,
+            "audio_url": audio_url
+        }
     except Exception as e:
         return {
             "error": "LLM response error",
@@ -94,6 +121,9 @@ async def chat_with_llama(user_input: str, style: str = "casual", current_user: 
             "raw_response": response.text,
             "exception": str(e)
         }
+
+os.makedirs("static/audio", exist_ok=True)  # Ensure folder exists
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.get("/chat_history/")
