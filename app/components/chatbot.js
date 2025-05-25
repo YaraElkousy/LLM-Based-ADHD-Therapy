@@ -75,12 +75,10 @@ const ChatBot = ({ token }) => {
       ]);
 
       // 🔊 Play audio if present
-      console.log(data.audio_url)
       if (data.audio_url) {
         const { sound } = await Audio.Sound.createAsync({
           uri: "http://192.168.100.215:8000" + data.audio_url,
         });
-        console.log(sound)
         await sound.playAsync();
       }
 
