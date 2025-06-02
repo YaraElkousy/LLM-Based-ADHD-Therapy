@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, Sta
 import ChatBot from '../components/chatbot'; 
 import TaskForm from '../components/task'; 
 import { useAuth } from '../auth/authContext';
+import SmartwatchInterface from '../components/smartwatch';
 
 const Home = () => {
   const [selectedTab, setSelectedTab] = useState('chat'); // Default tab
@@ -38,7 +39,7 @@ const Home = () => {
                 selectedTab === 'chat' && styles.activeTabText
               ]}
             >
-              Chat Assistant
+              Chat 
             </Text>
           </TouchableOpacity>
           <TouchableOpacity 
@@ -54,7 +55,23 @@ const Home = () => {
                 selectedTab === 'tasks' && styles.activeTabText
               ]}
             >
-              Daily Tasks
+              Tasks
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            onPress={() => setSelectedTab('smartwatch')}
+            style={[
+              styles.tabButton,
+              selectedTab === 'smartwatch' && styles.activeTabButton
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabButtonText,
+                selectedTab === 'smartwatch' && styles.activeTabText
+              ]}
+            >
+              Heart Monitor
             </Text>
           </TouchableOpacity>
         </View>
@@ -63,6 +80,7 @@ const Home = () => {
         <View style={styles.contentArea}>
         {selectedTab === 'chat' && <ChatBot token={token} />}
         {selectedTab === 'tasks' && <TaskForm token={token}/>}
+        {selectedTab === 'smartwatch' && <SmartwatchInterface />}
         </View>
       </View>
     </SafeAreaView>

@@ -17,7 +17,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # OAuth2PasswordBearer is used for token-based authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Pydantic models for user login
 class User(BaseModel):
     username: str
     password: str
@@ -25,7 +24,7 @@ class User(BaseModel):
 class UserInDB(User):
     hashed_password: str
 
-# Utility functions for password hashing and JWT token creation
+#password hashing and JWT token creation
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -38,11 +37,9 @@ def create_access_token(data: dict, expires_delta: timedelta = timedelta(hours=5
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-# Function to get a user from the database
 async def get_user(db, username: str):
     return await db["users"].find_one({"username": username})
 
-# Dependency to get the current user from the token
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])

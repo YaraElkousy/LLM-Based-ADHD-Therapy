@@ -8,8 +8,13 @@ from datetime import datetime
 import asyncio
 from backend.database import save_message, get_chat_history, get_db, save_task, get_user_tasks
 from backend.auth import get_current_user
+from backend.tts_utils import synthesize_speech
+from fastapi.staticfiles import StaticFiles
+import os
+from dotenv import load_dotenv
 
-# Initialize FastAPI app
+load_dotenv()
+
 app = FastAPI()
 
 app.add_middleware(
@@ -23,10 +28,10 @@ app.add_middleware(
 app.include_router(auth_router)
 
 # Hugging Face API details
-API_URL = "https://api-inference.huggingface.co/models/Qwen/Qwen3-8B"
-HEADERS = {"Authorization": "Bearer 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"}
+API_URL = "https://openrouter.ai/api/v1/chat/completions"
+HEADERS = {"Authorization": "Bearer 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", "Content-Type": "application/json"}
+#old openrouter key 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
 
-# Define different assistant styles
 styles = {
     "scientific": """You are an ADHD therapist providing only research-backed advice. 
         - Do NOT make up facts. 
@@ -65,19 +70,59 @@ async def chat_with_llama(user_input: str, style: str = "casual", current_user: 
     
     history_text = "\n".join([f"{message['role'].capitalize()}: {message['text']}" for message in chat_history])
 
-    chat_text = f"{system_prompt}\n{history_text}\nUser: {user_input}\nAIresponse:"
+    messages = [{"role": "system", "content": system_prompt}]
+    for message in chat_history:
+        messages.append({"role": message["role"], "content": message["text"]})
+    messages.append({"role": "user", "content": user_input})
 
-    response = requests.post(API_URL, headers=HEADERS, json={"inputs": chat_text})
+    response = requests.post(API_URL, headers=HEADERS, json={
+        "model": "google/gemini-2.5-pro-preview-03-25",  
+        "messages": messages,
+        "max_tokens": 1000
+    })
     
-    if response.status_code == 200:
-        generated_text = response.json()[0]["generated_text"]  #then remove everything before "Assistant:
-        bot_response = generated_text.split("AIresponse:", 1)[-1].strip()
+    #google/gemini-2.5-pro-preview-03-25
+    #deepseek/deepseek-r1-distill-qwen-14b:free
+    #nvidia/llama-3.1-nemotron-nano-8b-v1:free
+    #meta-llama/llama-3.1-8b-instruct:free
+
+    try:
+        data = response.json()
+        bot_response = data["choices"][0]["message"]["content"]
+
+        #generate audio file
+        # audio_path = f"static/audio/response_{current_user}.mp3"
+        # synthesize_speech(bot_response, output_path=audio_path)
 
         await save_message(session_id, "user", user_input)
         await save_message(session_id, "assistant", bot_response)
-        return {"response": bot_response}
-    else:
-        return {"error": response.status_code, "message": response.text}
+        audio_url = None
+        try:
+            # generate audio file
+            filename = f"response_{current_user}_{datetime.utcnow().timestamp()}.mp3"
+            audio_path = f"static/audio/{filename}"
+            #print("GOOGLE_APPLICATION_CREDENTIALS =", os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+            synthesize_speech(bot_response, output_path=audio_path)
+            audio_url = f"/static/audio/{filename}"
+        except Exception as audio_error:
+            # Log audio error, but don't fail entire response
+            print(f"Audio generation failed: {audio_error}")
+
+        return {
+            "response": bot_response,
+            "audio_url": audio_url
+        }
+    except Exception as e:
+        return {
+            "error": "LLM response error",
+            "status_code": response.status_code,
+            "raw_response": response.text,
+            "exception": str(e)
+        }
+
+os.makedirs("static/audio", exist_ok=True)  # Ensure folder exists
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 @app.get("/chat_history/")
 async def chat_history(current_user: str = Depends(get_current_user)):
@@ -91,26 +136,23 @@ async def chat_history(current_user: str = Depends(get_current_user)):
 @app.post("/add_task/")
 async def add_task(task_name: str, db: dict = Depends(get_db), current_user: str = Depends(get_current_user)):
     """ Endpoint to generate focus methods and rewards for a task """
-    prompt = f"You are a supportive and friendly ADHD therapist who gives practical, easy-to-understand advice. Suggest an effective focus method and a motivating reward for completing the task: '{task_name}'."
+    prompt = f"Suggest an effective focus method and a motivating reward for completing the task: '{task_name}'. Dont always suggest the pomodoro technique."
     
-    response = requests.post(API_URL, headers=HEADERS, json={"inputs": prompt})
+    response = requests.post(API_URL, headers=HEADERS, json={
+        "model": "google/gemini-2.5-pro-preview-03-25",  
+        "messages": [
+            {"role": "system", "content": "You are a supportive and friendly ADHD therapist who gives practical, easy-to-understand advice in no more than 60 words."},
+            {"role": "user", "content": prompt}
+        ],
+        "max_tokens": 1000
+    })
 
     if response.status_code == 200:
-        generated_text = response.json()
-        
-        if isinstance(generated_text, list) and generated_text:
-            generated_text = generated_text[0].get("generated_text", "")
-        clean_text = generated_text.replace(prompt, "").strip()
+        data = response.json()
+        bot_response = data["choices"][0]["message"]["content"]
+        await save_task(current_user, task_name, bot_response)
 
-        task_data = {
-            "username": current_user,  # Store task under user
-            "task": task_name, 
-            "details": clean_text
-        }
-        
-        await save_task(current_user, task_name, clean_text)
-
-        return {"message": f"Task '{task_name}' added!", "suggested_strategy": task_data["details"]}
+        return {"message": f"Task '{task_name}' added!", "suggested_strategy": bot_response}
     else:
         return {"error": response.status_code, "message": response.text}
 
@@ -127,13 +169,20 @@ async def get_tasks(current_user: str = Depends(get_current_user)):
 @app.get("/relaxation/")
 def ai_generated_exercise(feeling: str):
     """ Endpoint to suggest relaxation exercises based on user mood """
-    prompt = f"You are a supportive and friendly ADHD therapist who gives practical, easy-to-understand advice. Suggest a breathing or meditation exercise for someone feeling {feeling}."
+    prompt = f"Suggest a breathing or meditation exercise for someone feeling {feeling}."
     
-    response = requests.post(API_URL, headers=HEADERS, json={"inputs": prompt})
+    response = requests.post(API_URL, headers=HEADERS, json={
+        "model": "google/gemini-2.5-pro-preview-03-25",  
+        "messages": [
+            {"role": "system", "content": "You are a supportive and friendly ADHD therapist who gives practical, easy-to-understand advice in no more than 60 words."},
+            {"role": "user", "content": prompt}
+        ],
+        "max_tokens": 1000
+    })
 
     if response.status_code == 200:
-       generated_text = response.json()[0]["generated_text"]
-       exercise_text = generated_text.replace(prompt, "").strip()
-       return {"exercise": exercise_text}
+        data = response.json()
+        exercise_text = data["choices"][0]["message"]["content"]
+        return {"exercise": exercise_text.strip()}
     else:
         return {"error": response.status_code, "message": response.text}
