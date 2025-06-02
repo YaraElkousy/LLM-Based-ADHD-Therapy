@@ -26,7 +26,7 @@ export const fetchChatHistory = async (token) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data.messages; //response contains an array of messages?
+    return response.data.messages; 
   } catch (error) {
     console.error("Error fetching chat history:", error);
     throw error;

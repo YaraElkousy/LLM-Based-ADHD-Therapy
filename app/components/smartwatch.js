@@ -29,7 +29,6 @@ const SmartwatchInterface = () => {
         setHeartRate(newHeartRate);
         setLastUpdated(new Date().toLocaleTimeString());
         
-        // Determine stress level based on heart rate
         if (newHeartRate < 70) {
           setStressLevel('Low');
         } else if (newHeartRate < 85) {

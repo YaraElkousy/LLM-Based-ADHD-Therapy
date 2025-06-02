@@ -32,7 +32,6 @@ const ChatBot = ({ token }) => {
     const loadChatHistory = async () => {
       try {
         const data = await fetchChatHistory(token);
-        // Make sure we're handling the data correctly
         setMessages(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Loading chat history:", error);
@@ -74,7 +73,7 @@ const ChatBot = ({ token }) => {
         { role: "assistant", text: data.response },
       ]);
 
-      // 🔊 Play audio if present
+      //Play audio if present
       if (data.audio_url) {
         const { sound } = await Audio.Sound.createAsync({
           uri: "http://192.168.100.215:8000" + data.audio_url,
@@ -183,7 +182,7 @@ const styles = StyleSheet.create({
   chatContentContainer: {
     paddingVertical: 10,
     paddingHorizontal: 4,
-    paddingTop: 60, // Add some padding at the top to make space for the cat
+    paddingTop: 60, 
   },
   messageContainer: {
     marginBottom: 12,
