@@ -14,6 +14,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+API_KEY = os.getenv("OPENAI_API_KEY")
 
 app = FastAPI()
 
@@ -29,8 +30,7 @@ app.include_router(auth_router)
 
 # Hugging Face API details
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
-HEADERS = {"Authorization": "Bearer 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", "Content-Type": "application/json"}
-#old openrouter key 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
+HEADERS = {"Authorization": "Bearer {API_KEY}", "Content-Type": "application/json"}
 
 styles = {
     "scientific": """You are an ADHD therapist providing only research-backed advice. 
